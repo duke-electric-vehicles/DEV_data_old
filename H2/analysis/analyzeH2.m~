@@ -2,11 +2,13 @@ clear; close all;
 
 PATHNAME = '/Users/shomikverma/Documents1/Duke/EV/DEV_data/H2/';
 FOLDER = 'fanData/';
-FILENAME = '20DC';
-FILENAME2 = '30DC';
+FILENAME = '20DC_sept18_2';
+FILENAME2 = '30DC_sept18';
+FILENAME3 = '40DC_sept18';
 EXT = '.txt';
 data = importdata(strcat(PATHNAME,FOLDER,FILENAME,EXT));
 data2 = importdata(strcat(PATHNAME,FOLDER,FILENAME2,EXT));
+data3 = importdata(strcat(PATHNAME,FOLDER,FILENAME3,EXT));
 
 % baseIVname = 'base_IV.txt';
 % data_base = importdata(baseIVname);
@@ -41,16 +43,37 @@ vFC = data(:, 7);
 iFC = data(:, 8);
 eFC = data(:, 9);
 time = data(:, 10) ./ 1000;
+time = time - time(1);
 tempFC = data(:, 13);
 pressFC = data(:, 14);
 flow = data(:, 15);
+instantH2 = smooth(flow*119.93,50);
+instantn = iBMS.*vBMS./instantH2;
 totalFlow = data(:, 16);
 instantEff = data(:, 17);
 if(exist('data2','var'))
     vBMS2 = data2(:, 1);
     iBMS2 = data2(:, 2);
+    vFC2 = data2(:, 7);
+    iFC2 = data2(:, 8);
     flow2 = data2(:, 15);
+    instantH2_2 = smooth(flow2*119.93,50);
+    instantn2 = iBMS2.*vBMS2./instantH2_2;
     time2 = data2(:, 10) ./ 1000;
+    time2 = time2 - time2(1);
+    tempFC2 = data2(:, 13);
+end
+if(exist('data3','var'))
+    vBMS3 = data3(:, 1);
+    iBMS3 = data3(:, 2);
+    vFC3 = data3(:, 7);
+    iFC3 = data3(:, 8);
+    flow3 = data3(:, 15);
+    instantH2_3 = smooth(flow3*119.93,50);
+    instantn3 = iBMS3.*vBMS3./instantH2_3;
+    time3 = data3(:, 10) ./ 1000;
+    time3 = time3 - time3(1);
+    tempFC3 = data3(:, 13);
 end
 % avgEff = data(:, 18);
 avgEff = zeros(size(instantEff));
@@ -136,4 +159,35 @@ ylabel('Efficiency (%)')
 filename = strcat(PATHNAME,'plots/',FILENAME,'Pn');
 print('-dpng', filename)
 
-figure(10);
+figure(10); clf;
+plot(time, instantn, '.');
+hold on
+if(exist('data2','var'))
+    plot(time2, instantn2,'.');
+end
+ylim([.55,.6])
+grid on
+legend(FILENAME, FILENAME2)
+title('Efficiency vs. time for various fan speeds')
+xlabel('Time (s)');
+ylabel('Efficiency');
+filename = strcat(PATHNAME,'plots/',FILENAME,'fan_eff');
+print('-dpng', filename)
+
+figure(11); clf;
+plot(time, tempFC, '.')
+hold on
+if(exist('data2','var'))
+    plot(time2, tempFC2,'.')
+end
+grid on
+legend(FILENAME, FILENAME2,'Location','SouthEast')
+title('Temperature vs. time for various fan speeds')
+xlabel('Time (s)');
+ylabel('Temperature (F)');
+filename = strcat(PATHNAME,'plots/',FILENAME,'fan_temp');
+print('-dpng', filename)
+
+% figure(12); clf;
+% grid on
+% plot(tempFC, instantn,'k.');

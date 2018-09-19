@@ -2,11 +2,13 @@ clear; close all;
 
 PATHNAME = '/Users/shomikverma/Documents1/Duke/EV/DEV_data/H2/';
 FOLDER = 'fanData/';
-FILENAME = '20DC';
-FILENAME2 = '30DC';
+FILENAME = '20DC_sept18_2';
+FILENAME2 = '30DC_sept18';
+FILENAME3 = '40DC_sept18';
 EXT = '.txt';
 data = importdata(strcat(PATHNAME,FOLDER,FILENAME,EXT));
 data2 = importdata(strcat(PATHNAME,FOLDER,FILENAME2,EXT));
+data3 = importdata(strcat(PATHNAME,FOLDER,FILENAME3,EXT));
 
 % baseIVname = 'base_IV.txt';
 % data_base = importdata(baseIVname);
@@ -30,6 +32,8 @@ fit_V = @(I) p1.*I.^5 + p2.*I.^4 + p3.*I.^3 + p4.*I.^2 + p5.*I + p6;
 % data = data(3849:28000,:);
 % vFC = data(:, 7);
 % data = data(gradient(vFC)<0, :);
+data = data(1:end-2000,:);
+data2 = data2(1:end-1000,:);
 
 c = 200;
 
@@ -60,6 +64,18 @@ if(exist('data2','var'))
     time2 = data2(:, 10) ./ 1000;
     time2 = time2 - time2(1);
     tempFC2 = data2(:, 13);
+end
+if(exist('data3','var'))
+    vBMS3 = data3(:, 1);
+    iBMS3 = data3(:, 2);
+    vFC3 = data3(:, 7);
+    iFC3 = data3(:, 8);
+    flow3 = data3(:, 15);
+    instantH2_3 = smooth(flow3*119.93,50);
+    instantn3 = iBMS3.*vBMS3./instantH2_3;
+    time3 = data3(:, 10) ./ 1000;
+    time3 = time3 - time3(1);
+    tempFC3 = data3(:, 13);
 end
 % avgEff = data(:, 18);
 avgEff = zeros(size(instantEff));
@@ -151,9 +167,12 @@ hold on
 if(exist('data2','var'))
     plot(time2, instantn2,'.');
 end
+if(exist('data3','var'))
+    plot(time3, instantn3,'.');
+end
 ylim([.55,.6])
 grid on
-legend(FILENAME, FILENAME2)
+legend('20DC', '30DC','40DC')
 title('Efficiency vs. time for various fan speeds')
 xlabel('Time (s)');
 ylabel('Efficiency');
@@ -166,14 +185,17 @@ hold on
 if(exist('data2','var'))
     plot(time2, tempFC2,'.')
 end
+if(exist('data3','var'))
+    plot(time3, tempFC3,'.')
+end
 grid on
-legend(FILENAME, FILENAME2,'Location','SouthEast')
+legend('20DC', '30DC','40DC','Location','SouthEast')
 title('Temperature vs. time for various fan speeds')
 xlabel('Time (s)');
 ylabel('Temperature (F)');
 filename = strcat(PATHNAME,'plots/',FILENAME,'fan_temp');
 print('-dpng', filename)
 
-figure(12); clf;
-grid on
-plot(tempFC, instantn,'k.');
+% figure(12); clf;
+% grid on
+% plot(tempFC, instantn,'k.');
